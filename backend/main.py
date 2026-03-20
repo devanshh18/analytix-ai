@@ -32,6 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
 # ─── Routers ─────────────────────────────────────────
 app.include_router(upload_router)
 app.include_router(dashboard_router)
@@ -39,15 +43,36 @@ app.include_router(chat_router)
 app.include_router(export_router)
 
 
-# ─── Root ────────────────────────────────────────────
-@app.get("/")
-async def root():
-    return {
-        "app": "Analytix AI",
-        "version": os.getenv("APP_VERSION", "1.0.0"),
-        "docs": "/docs",
-        "status": "running",
-    }
+# ─── Frontend Serving (Production) ──────────────────────
+frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
+
+if frontend_dist.exists():
+    # Mount the /assets directory explicitly
+    app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        # Allow API, docs, and openapi.json to pass through
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc") or full_path.startswith("openapi.json"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Endpoint not found")
+            
+        # Check if the exact file exists (e.g., vite.svg, favicon.ico)
+        file_path = frontend_dist / full_path
+        if file_path.is_file():
+            return FileResponse(str(file_path))
+            
+        # Fallback to index.html for React Router
+        return FileResponse(str(frontend_dist / "index.html"))
+else:
+    @app.get("/")
+    async def root():
+        return {
+            "app": "Analytix AI API Server",
+            "version": os.getenv("APP_VERSION", "1.0.0"),
+            "status": "running locally without built frontend",
+            "docs": "/docs",
+        }
 
 
 @app.get("/health")

@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: analytix-ai-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: APP_VERSION
+        value: 1.0.0
+      - key: GROQ_API_KEY
+        sync: false # Must be filled in manually on Render dashboard
+    autoDeploy: true
+
+    # Domains (if supported natively or configured manually on dashboard)
+    # Adding domains in render.yaml requires Render payment plan usually,
+    # but specifying it helps document it. The primary domain should be:
+    # analytixai.tech
