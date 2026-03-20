@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, FileText, Presentation, Lightbulb, SlidersHorizontal,
-         Database, Columns3, TrendingUp, Trophy, CalendarDays, CheckCircle2, BarChart3 } from 'lucide-react';
+         Database, Columns3, TrendingUp, Trophy, CalendarDays, CheckCircle2, BarChart3, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ChartCard from '../components/ChartCard';
 import InsightPanel from '../components/InsightPanel';
@@ -23,6 +23,36 @@ export default function DashboardPage() {
   const { dashboard, insights, datasetId, chatOpen, setChatOpen, datasetInfo } = useApp();
   const [activeFilters, setActiveFilters] = useState({});
   const [showInsights, setShowInsights] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [exportingPpt, setExportingPpt] = useState(false);
+
+  const handleExport = async (type) => {
+    if (type === 'pdf') setExportingPdf(true);
+    else setExportingPpt(true);
+
+    try {
+      const url = type === 'pdf' ? getExportPdfUrl(datasetId) : getExportPptxUrl(datasetId);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = downloadUrl;
+      a.download = `AnalytixAI_Report_${datasetInfo?.filename?.split('.')[0] || 'Data'}.${type}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      a.remove();
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to generate export. Please try again.');
+    } finally {
+      if (type === 'pdf') setExportingPdf(false);
+      else setExportingPpt(false);
+    }
+  };
 
   const kpis = dashboard?.kpis || [];
   const charts = dashboard?.charts || [];
@@ -94,12 +124,14 @@ export default function DashboardPage() {
             <Lightbulb size={15} />
             {showInsights ? 'Hide Insights' : 'Insights'}
           </button>
-          <a href={getExportPdfUrl(datasetId)} className="btn btn-secondary" download>
-            <FileText size={15} /> PDF
-          </a>
-          <a href={getExportPptxUrl(datasetId)} className="btn btn-secondary" download>
-            <Presentation size={15} /> PPT
-          </a>
+          <button className="btn btn-secondary" onClick={() => handleExport('pdf')} disabled={exportingPdf}>
+            {exportingPdf ? <Loader2 size={15} className="spin" /> : <FileText size={15} />}
+            PDF
+          </button>
+          <button className="btn btn-secondary" onClick={() => handleExport('pptx')} disabled={exportingPpt}>
+            {exportingPpt ? <Loader2 size={15} className="spin" /> : <Presentation size={15} />}
+            PPT
+          </button>
         </div>
       </div>
 
