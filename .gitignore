@@ -1,0 +1,66 @@
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Dependencies
+node_modules/
+backend/venv/
+backend/env/
+.venv/
+env/
+venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Build Outputs
+frontend/dist/
+frontend/build/
+
+# IDE/Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Temporary files, logs, and exports
+*.log
+backend/test_report.pdf
+backend/test_presentation.pptx
+*.pdf
+*.pptx
+*.png
+*.jpg
+*.jpeg
+*.svg
+# Allow logo though
+!frontend/src/assets/logo.png
+!frontend/src/assets/logo_dark.png
+
+# Windows
+Thumbs.db
+Desktop.ini
