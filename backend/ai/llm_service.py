@@ -89,7 +89,7 @@ class RuleBasedLLM(BaseLLM):
 
 def get_llm_service() -> BaseLLM:
     """Factory function to get the configured LLM service."""
-    backend = os.getenv("LLM_BACKEND", "rule_based").lower()
+    backend = os.getenv("LLM_BACKEND", "groq").lower()
 
     if backend == "groq":
         groq_llm = GroqLLM()
